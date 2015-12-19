@@ -71,10 +71,8 @@ public final class GuitarTests {
     try {
       final IntegrationTestSetup setup = new IntegrationTestSetup();
       setup.createIntegrationTestDatabase();
-    } catch (final IOException e) {
-      e.printStackTrace();
     } catch (final SQLException e) {
       e.printStackTrace();
-    }
+    } 
   }
 }

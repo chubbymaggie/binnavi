@@ -19,7 +19,7 @@ import com.google.common.collect.Lists;
 import com.google.security.zynamics.binnavi.CUtilityFunctions;
 import com.google.security.zynamics.binnavi.Database.CDatabaseManager;
 import com.google.security.zynamics.binnavi.Database.Interfaces.IDatabase;
-import com.google.security.zynamics.binnavi.Gui.ErrorDialog.CNaviErrorDialog;
+import com.google.security.zynamics.binnavi.Gui.errordialog.NaviErrorDialog;
 import com.google.security.zynamics.binnavi.Resources.Constants;
 import com.google.security.zynamics.binnavi.ZyGraph.ZyGraphViewSettings;
 import com.google.security.zynamics.common.config.ConfigHelper;
@@ -198,9 +198,6 @@ public final class ConfigManager {
       properties.getProperties().loadFromXML(new FileInputStream(filename));
     } catch (final FileNotFoundException e) {
       notFound = true;
-    } catch (final InvalidPropertiesFormatException e) {
-      // Rethrow as FileReadException.
-      throw new FileReadException(e);
     } catch (final IOException e) {
       // Rethrow as FileReadException.
       throw new FileReadException(e);
@@ -322,7 +319,7 @@ public final class ConfigManager {
               + "information."},
           new String[] {"The active configuration was not saved and will be lost."});
 
-      CNaviErrorDialog.show(parent, innerMessage, innerDescription, e);
+      NaviErrorDialog.show(parent, innerMessage, innerDescription, e);
     }
   }
 }

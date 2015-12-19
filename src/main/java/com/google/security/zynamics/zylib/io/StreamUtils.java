@@ -18,8 +18,8 @@ package com.google.security.zynamics.zylib.io;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * This class contains stream utility functions.
@@ -39,19 +39,8 @@ public class StreamUtils {
    * @throws IOException if an IO error occurs.
    */
   public static List<String> readLinesFromReader(final Reader reader) throws IOException {
-    final BufferedReader br = new BufferedReader(reader);
-    try {
-      final List<String> lines = new ArrayList<String>();
-      String line;
-      while (true) {
-        line = br.readLine();
-        if (line == null) {
-          return lines;
-        }
-        lines.add(line);
-      }
-    } finally {
-      br.close();
+    try (BufferedReader br = new BufferedReader(reader)) {
+      return br.lines().collect(Collectors.toList());
     }
   }
 }

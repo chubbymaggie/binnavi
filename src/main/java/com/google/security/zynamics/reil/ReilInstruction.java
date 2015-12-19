@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Class that's used to store REIL instructions.
@@ -58,7 +59,7 @@ public final class ReilInstruction implements IInstruction, Comparable<ReilInstr
   /**
    * Metadata of the REIL instruction.
    */
-  private final Map<String, String> metaData = new HashMap<String, String>();
+  private final Map<String, String> metaData = new HashMap<>();
 
   /**
    * Creates a new ReilInstruction object.
@@ -72,14 +73,14 @@ public final class ReilInstruction implements IInstruction, Comparable<ReilInstr
   public ReilInstruction(final IAddress address, final String mnemonic,
       final ReilOperand firstOperand, final ReilOperand secondOperand,
       final ReilOperand thirdOperand) {
-    Preconditions.checkNotNull(mnemonic, "Error: Argument mnemonic can't be null");
+    Preconditions.checkNotNull(mnemonic, "Argument mnemonic can't be null");
     this.mnemonic = ReilHelpers.MnemonicToMnemonicCode(mnemonic);
     this.firstOperand =
-        Preconditions.checkNotNull(firstOperand, "Error: Argument firstOperand can't be null");
+        Preconditions.checkNotNull(firstOperand);
     this.secondOperand =
-        Preconditions.checkNotNull(secondOperand, "Error: Argument secondOperand can't be null");
+        Preconditions.checkNotNull(secondOperand);
     this.thirdOperand =
-        Preconditions.checkNotNull(thirdOperand, "Error: Argument thirdOperand can't be null");
+        Preconditions.checkNotNull(thirdOperand);
 
     this.address = address;
   }
@@ -90,23 +91,10 @@ public final class ReilInstruction implements IInstruction, Comparable<ReilInstr
    * @return The string representation of meta-data.
    */
   private String getMetaDataString() {
-    final StringBuffer stringBuffer = new StringBuffer();
-
-    String[] keys = new String[0];
-    keys = metaData.keySet().toArray(keys);
-
-    for (int i = 0; i < metaData.size(); i++) {
-
-      stringBuffer.append(keys[i]);
-      stringBuffer.append(" : ");
-      stringBuffer.append(metaData.get(keys[i]));
-
-      if (i != (metaData.size() - 1)) {
-        stringBuffer.append(", ");
-      }
-    }
-
-    return stringBuffer.toString();
+    return metaData.keySet()
+            .stream()
+            .map(key -> key + " : " + metaData.get(key))
+            .collect(Collectors.joining(", "));
   }
 
   @Override
@@ -171,7 +159,7 @@ public final class ReilInstruction implements IInstruction, Comparable<ReilInstr
    * @return A map of metadata information.
    */
   public Map<String, String> getMetaData() {
-    return new HashMap<String, String>(metaData);
+    return new HashMap<>(metaData);
   }
 
   /**
@@ -183,7 +171,7 @@ public final class ReilInstruction implements IInstruction, Comparable<ReilInstr
   public String getMetaData(final String key) {
     // TODO: Handle invalid keys
 
-    Preconditions.checkNotNull(key, "Error: Argument key can't be null");
+    Preconditions.checkNotNull(key, "Argument key can't be null");
 
     return metaData.get(key);
   }
@@ -205,7 +193,7 @@ public final class ReilInstruction implements IInstruction, Comparable<ReilInstr
 
   @Override
   public List<IOperandTree> getOperands() {
-    final List<IOperandTree> operands = new ArrayList<IOperandTree>();
+    final List<IOperandTree> operands = new ArrayList<>();
 
     operands.add(firstOperand);
     operands.add(secondOperand);
@@ -259,7 +247,7 @@ public final class ReilInstruction implements IInstruction, Comparable<ReilInstr
   public void setMetaData(final String key, final String value) {
     // TODO: Check for duplicates.
 
-    Preconditions.checkNotNull(key, "Error: Argument key can't be null");
+    Preconditions.checkNotNull(key, "Argument key can't be null");
 
     if (value == null) {
       metaData.remove(key);
@@ -275,9 +263,24 @@ public final class ReilInstruction implements IInstruction, Comparable<ReilInstr
    */
   @Override
   public String toString() {
-    return address.toHexString() + ": " + ReilHelpers.MnemonicCodeToMnemonic(mnemonic) + " ["
-        + firstOperand.getSize() + " " + firstOperand + ", " + secondOperand.getSize() + " "
-        + secondOperand + ", " + thirdOperand.getSize() + " " + thirdOperand + "]";
+    final StringBuilder stringBuilder = new StringBuilder();
+    stringBuilder.append(address.toHexString());
+    stringBuilder.append(": ");
+    stringBuilder.append(ReilHelpers.MnemonicCodeToMnemonic(mnemonic));
+    stringBuilder.append(" [");
+    stringBuilder.append(firstOperand.getSize());
+    stringBuilder.append(" ");
+    stringBuilder.append(firstOperand);
+    stringBuilder.append(", ");
+    stringBuilder.append(secondOperand.getSize());
+    stringBuilder.append(" ");
+    stringBuilder.append(secondOperand);
+    stringBuilder.append(", ");
+    stringBuilder.append(thirdOperand.getSize());
+    stringBuilder.append(" ");
+    stringBuilder.append(thirdOperand);
+    stringBuilder.append("]");
+    return stringBuilder.toString(); 
   }
 
   /**

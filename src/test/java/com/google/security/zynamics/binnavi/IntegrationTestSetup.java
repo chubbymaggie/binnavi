@@ -84,13 +84,12 @@ public class IntegrationTestSetup {
    * @param databaseName The name of the database to be dumped.
    */
   private static void createTestDataset(final String databaseName) {
-    try {
-      final Connection connection =
+    try (Connection connection =
           DriverManager.getConnection(url + databaseName, databaseProperties);
-      final PreparedStatement statement = connection.prepareStatement(
+          PreparedStatement statement = connection.prepareStatement(
           "SELECT table_name FROM information_schema.tables WHERE table_schema = \'public\'");
-      final ResultSet resultSet = statement.executeQuery();
-
+          ResultSet resultSet = statement.executeQuery()) {
+      
       final File testDataDirectory = new File(path + "/" + databaseName);
       if (!testDataDirectory.exists()) {
         if (!testDataDirectory.mkdirs()) {
@@ -98,17 +97,11 @@ public class IntegrationTestSetup {
         }
       }
 
-      try {
         while (resultSet.next()) {
           dumpTableInformation(connection, testDataDirectory, resultSet.getString(1));
         }
-      } catch (final IOException exception) {
-        CUtilityFunctions.logException(exception);
-      } finally {
-        resultSet.close();
-        connection.close();
-      }
-    } catch (final SQLException exception) {
+        
+    } catch (IOException | SQLException exception) {
       CUtilityFunctions.logException(exception);
     }
   }
@@ -127,16 +120,12 @@ public class IntegrationTestSetup {
   private static void dumpTableInformation(
       final Connection connection, final File testDataDirectory, final String tableName)
           throws SQLException, IOException {
-    FileWriter fw = null;
     final CopyManager manager = new CopyManager((BaseConnection) connection);
-    try {
-      fw = new FileWriter(new File(testDataDirectory, tableName + ".sql"));
+    try (FileWriter fw = new FileWriter(new File(testDataDirectory, tableName + ".sql"))) {
       manager.copyOut("COPY " + tableName + " TO STDOUT", fw);
     } catch (final IOException exception) {
       CUtilityFunctions.logException(exception);
-    } finally {
-      fw.close();
-    }
+    } 
   }
 
   public static void main(final String[] args) {
@@ -161,9 +150,8 @@ public class IntegrationTestSetup {
    * database are initialized. This order is essential to avoid foreign key violations.
    *
    * @param databaseName The name of the database to create.
-   * @throws IOException if the {@link FileReader reader} could not be closed.
    */
-  private void createDatabase(final String databaseName) throws IOException {
+  private void createDatabase(final String databaseName) {
 
     try {
       final Connection connection =
@@ -185,17 +173,13 @@ public class IntegrationTestSetup {
       final CopyManager manager = new CopyManager((BaseConnection) connection);
 
       for (final File currentFile : testDataDir.listFiles()) {
-        FileReader reader = null;
-        try {
+        try (FileReader reader = new FileReader(currentFile)) {
           final String tableName = currentFile.getName().split(".sql")[0];
-          reader = new FileReader(currentFile);
           NaviLogger.info("[i] Importing: %s.%s from %s", databaseName, tableName,
               currentFile.getAbsolutePath());
           manager.copyIn("COPY " + tableName + " FROM STDIN", reader);
         } catch (final IOException exception) {
           CUtilityFunctions.logException(exception);
-        } finally {
-          reader.close();
         }
       }
 
@@ -214,19 +198,14 @@ public class IntegrationTestSetup {
           + " WHERE S.relkind = 'S' AND S.oid = D.objid AND D.refobjid = T.oid "
           + " AND D.refobjid = C.attrelid AND D.refobjsubid = C.attnum ORDER BY S.relname; ";
 
-      final PreparedStatement statement = connection.prepareStatement(findSequencesQuery);
-      final ResultSet resultSet = statement.executeQuery();
-
-      try {
+      try (PreparedStatement statement = connection.prepareStatement(findSequencesQuery);
+           ResultSet resultSet = statement.executeQuery()) {
         while (resultSet.next()) {
           final PreparedStatement fixSequence = connection.prepareStatement(resultSet.getString(1));
           fixSequence.execute();
         }
       } catch (final SQLException exception) {
         CUtilityFunctions.logException(exception);
-      } finally {
-        statement.close();
-        resultSet.close();
       }
 
     } catch (final SQLException exception) {
@@ -240,7 +219,7 @@ public class IntegrationTestSetup {
    * @throws SQLException if one of the queries for drop or create fail.
    * @throws IOException
    */
-  public void createIntegrationTestDatabase() throws SQLException, IOException {
+  public void createIntegrationTestDatabase() throws SQLException {
 
     final Connection connection = DriverManager.getConnection(url + "postgres", databaseProperties);
 
