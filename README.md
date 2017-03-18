@@ -2,9 +2,6 @@
 
 Copyright 2011-2016 Google Inc.
 
-Disclaimer: This is not an official Google product (experimental or otherwise),
-it is just code that happens to be owned by Google.
-
 ## Introduction
 
 BinNavi is a binary analysis IDE - an environment that allows users to inspect,
@@ -83,6 +80,8 @@ storing disassemblies/comments/traces - so you need to have such an instance
 running somewhere accessible to you. You can launch BinNavi as follows:
 
     java -jar target/binnavi-all.jar
+
+*Note: HiDPI displays may not scale properly with Java 8. Use Java 9 if this is an issue for you.*
 
 ## Importing the project into Eclipse
 
